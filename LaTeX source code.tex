@@ -1,0 +1,616 @@
+\documentclass{article}
+\input{C:/CODE/LATEX/note/not-setup/note-setup-box.tex}
+
+\title{Model arrangement of Facility Location Problems: Coverage Models and Hierarchical Extensions}
+\author{Various Author}
+\date{\today}
+
+\begin{document}
+
+\makecover{C:/CODE/LATEX/note/not-setup/cover/cover1.jpg}
+
+\section{Coverage Models}
+
+\begin{definition}[Notation]
+The following notation is used throughout this document:
+\begin{itemize}
+    \item $i$: index of demand nodes, $j$: index of facility nodes
+    \item $I$: set of demand nodes, $J$: set of potential facility sites
+    \item $S$: service distance or time standard
+    \item $p$: number of facilities to locate
+    \item $d_{ij}$: distance or travel time from demand node $i$ to facility $j$
+    \item $a_i$: demand at node $i$ (e.g., population)
+    \item $w_j$: cost of establishing a facility at site $j$
+    \item $N_i = \{j \in J : d_{ij} \leq S\}$: set of facilities that can cover demand node $i$
+    \item $M_j = \{i \in I : d_{ij} \leq S\}$: set of demand nodes covered by facility $j$
+    \item $x_j = \begin{cases} 1, & \text{if a facility is located at site } j \\ 0, & \text{otherwise} \end{cases}$
+    \item $y_i = \begin{cases} 1, & \text{if demand node } i \text{ is covered} \\ 0, & \text{otherwise} \end{cases}$
+    \item $X_j$: number of servers at facility site $j$ (can be $\geq 0$)
+\end{itemize}
+\end{definition}
+
+\subsection{Location Set Covering Problem (LSCP)}
+
+\begin{definition}[LSCP]
+The Location Set Covering Problem minimizes the number of facilities required to cover all demand nodes:
+\[ \text{Minimize } Z = \sum_{j \in J} x_j \]
+\[
+    \text{subject to: } 
+    \begin{cases}
+        \sum\limits_{j \in N_i} x_j \geq 1, & \forall i \in I \\
+        x_j \in \{0,1\}, & \forall j \in J
+    \end{cases}
+\]
+\end{definition}
+
+\begin{remark}
+LSCP assumes complete coverage of all demand nodes, which can be unrealistic in resource-constrained settings.
+\end{remark}
+
+\subsection{Maximum Covering Location Problem (MCLP)}
+
+\begin{definition}[MCLP]
+The Maximum Covering Location Problem maximizes covered demand given a fixed number of facilities $p$:
+\[ \text{Maximize } Z = \sum_{i \in I} a_i y_i \]
+\[
+    \text{subject to: }
+    \begin{cases}
+        y_i \leq \sum\limits_{j \in N_i} x_j, & \forall i \in I \\
+        \sum\limits_{j \in J} x_j \leq p \\
+        x_j \in \{0,1\}, & \forall j \in J \\
+        y_i \in \{0,1\}, & \forall i \in I
+    \end{cases}
+\]
+\end{definition}
+
+\begin{remark}
+The first constraint ensures that a demand node is only counted as covered if at least one facility within the coverage standard is established. The binary constraints on $x_j$ and $y_i$ are essential for the model's formulation.
+\end{remark}
+
+\subsection{Probabilistic Extensions: Key Concepts}
+
+\begin{definition}[Busy Rate and Reliability]
+In probabilistic coverage models, we consider:
+\begin{itemize}
+    \item $q$: global busy rate (probability a server is busy)
+    \item $q_i$: local busy rate for demand node $i$
+    \item $\alpha$: reliability level (minimum probability that at least one server is available)
+    \item $H_k$: marginal increase in expected coverage when adding a $k$-th server
+\end{itemize}
+\end{definition}
+
+\subsection{Maximum Expected Covering Location Problem (MEXCLP)}
+
+\begin{definition}[Expected Coverage Derivation]
+Assuming independent and identically distributed server busy probabilities $q$, the probability that at least one of $k$ servers is available for a demand node is:
+\[ P_k = 1 - q^k \]
+The increase in expected coverage when adding the $k$-th server to a demand node is:
+\[ H_k = P_k - P_{k-1} = (1 - q^k) - (1 - q^{k-1}) = q^{k-1}(1 - q) \]
+Thus, the expected coverage contributed by the $k^{\text{th}}$ server covering demand node $i$ is $a_i H_k$.
+\end{definition}
+
+\begin{definition}[MEXCLP]
+MEXCLP maximizes expected coverage given $p$ servers with independent busy probability $q$:
+\[ \text{Maximize } Z = \sum_{i \in I} \sum_{k=1}^{n_i} a_i q^{k-1}(1-q) z_{ik} \]
+\[
+    \text{subject to: }
+    \begin{cases}
+        \sum\limits_{k=1}^{n_i} z_{ik} \leq \sum\limits_{j \in N_i} X_j, & \forall i \in I \\
+        \sum\limits_{j \in J} X_j \leq p \\
+        X_j \in \mathbb{N}_0, & \forall j \in J \\
+        z_{ik} \in \{0,1\}, & \forall i \in I, k=1,\dots,n_i
+    \end{cases}
+\]
+where $X_j$ is the number of servers at facility $j$, $z_{ik}=1$ if demand node $i$ is covered by at least $k$ servers, and $n_i$ is the maximum possible number of servers covering node $i$.
+\end{definition}
+
+\subsection{Probabilistic Location Set Covering Problem (PLSCP)}
+
+\begin{definition}[Local Busy Rate Derivation]
+The local busy rate for demand node $i$ is estimated as:
+\[ q_i = \frac{\text{total service time required in } M_i}{\text{total service capacity available to } i} \]
+More precisely, if $\bar{t}$ is the average service time (hours) and $f_k$ is the request rate at node $k$ (requests/day):
+\[ q_i = \frac{\bar{t} \sum_{k \in M_i} f_k}{24 \sum_{j \in N_i} X_j} = \frac{\rho_i}{\sum_{j \in N_i} X_j} \]
+where $\rho_i = \frac{\bar{t} \sum_{k \in M_i} f_k}{24}$ is the utilization rate.
+\end{definition}
+
+\begin{theorem}[Reliability Constraint Derivation]
+The probability that at least one server is available for demand node $i$ is:
+\[ P_i = 1 - q_i^{\sum_{j \in N_i} X_j} = 1 - \left(\frac{\rho_i}{\sum_{j \in N_i} X_j}\right)^{\sum_{j \in N_i} X_j} \]
+Requiring $P_i \geq \alpha$ leads to:
+\[ 1 - \left(\frac{\rho_i}{\sum_{j \in N_i} X_j}\right)^{\sum_{j \in N_i} X_j} \geq \alpha \]
+This is equivalent to finding the smallest integer $b_i$ such that:
+\[ 1 - \left(\frac{\rho_i}{b_i}\right)^{b_i} \geq \alpha \]
+Thus, we require $\sum_{j \in N_i} X_j \geq b_i$.
+\end{theorem}
+
+\begin{definition}[PLSCP]
+PLSCP minimizes the number of servers required to achieve a reliability level $\alpha$:
+\[ \text{Minimize } Z = \sum_{j \in J} X_j \]
+\[
+    \text{subject to: } 
+    \begin{cases}
+        \sum\limits_{j \in N_i} X_j \geq b_i, & \forall i \in I \\
+        X_j \in \mathbb{N}_0, & \forall j \in J
+    \end{cases}
+\]
+where $b_i$ is the smallest integer satisfying $1 - (\rho_i/b_i)^{b_i} \geq \alpha$.
+\end{definition}
+
+\subsection{Maximum Availability Location Problem (MALP)}
+
+\begin{definition}[MALP]
+MALP maximizes demand covered with reliability $\alpha$ given $p$ servers:
+\[ \text{Maximize } Z = \sum_{i \in I} a_i z_{ib_i} \]
+\[
+    \text{subject to: }
+    \begin{cases}
+        \sum\limits_{k=1}^{b_i} z_{ik} \leq \sum\limits_{j \in N_i} X_j, & \forall i \in I \\
+        z_{ik} \leq z_{i(k-1)}, & \forall i \in I, k=2,\dots,b_i \\
+        \sum\limits_{j \in J} X_j \leq p \\
+        X_j \in \mathbb{N}_0, & \forall j \in J \\
+        z_{ik} \in \{0,1\}, & \forall i \in I, k=1,\dots,b_i
+    \end{cases}
+\]
+where $b_i$ is as defined in PLSCP, and $z_{ik}=1$ if demand node $i$ is covered by at least $k$ servers.
+\end{definition}
+
+\begin{remark}
+The constraints $z_{ik} \leq z_{i(k-1)}$ ensure logical consistency: if a node is covered by at least $k$ servers, it must also be covered by at least $k-1$ servers.
+\end{remark}
+
+\section{Hierarchical Location Models}
+
+\begin{definition}[Hierarchical Medical System]
+A two-tier system consisting of:
+\begin{itemize}
+    \item Clinics: provide primary/basic services
+    \item Hospitals: provide advanced/specialized services and support clinics
+    \item Two referral patterns:
+    \begin{itemize}
+        \item Top-down (clinic to hospital): R1 model
+        \item Bottom-up (hospital to clinic): R2 model
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\subsection{Top-Down Referral Model (R1)}
+
+\begin{definition}[Additional Notation for Hierarchical Models]
+    We consider:
+\begin{itemize}
+    \item $c_j = \begin{cases} 1, & \text{if a clinic is located at site } j \\ 0, & \text{otherwise} \end{cases}$
+    \item $h_j = \begin{cases} 1, & \text{if a hospital is located at site } j \\ 0, & \text{otherwise} \end{cases}$
+    \item $P_c$: number of clinics to locate
+    \item $P_h$: number of hospitals to locate
+    \item $V_i = \{j \in J : d_{ij} \leq S\}$: set of hospital sites that can provide clinic services to node $i$
+    \item $U_i = \{j \in J : d_{ij} \leq S\}$: set of hospital sites that can provide hospital services to node $i$
+    \item $q_j = \begin{cases} 1, & \text{if clinic at site } j \text{ is not covered by any hospital} \\ 0, & \text{otherwise} \end{cases}$
+\end{itemize}
+\end{definition}
+
+\begin{definition}[R1 Model]
+R1 has two objectives: maximize clinic coverage and minimize clinics without hospital access:
+\[ \text{Maximize } Z = \left( \sum_{i \in I} a_i y_i, -\sum_{j \in J} q_j \right) \]
+\[
+    \text{subject to: }
+    \begin{cases}
+        \sum\limits_{j \in N_i} c_j + \sum\limits_{j \in V_i} h_j \geq y_i, & \forall i \in I \\
+        \sum\limits_{k \in M_j} h_k - c_j + q_j \geq 0, & \forall j \in J \\
+        \sum\limits_j h_j = P_h, \quad \sum\limits_j c_j = P_c \\
+        c_j, h_j, y_i, q_j \in \{0,1\}, & \forall i \in I, j \in J
+    \end{cases}
+\]
+\end{definition}
+
+\begin{remark}
+The constraint $\sum_{k \in M_j} h_k - c_j + q_j \geq 0$ ensures $q_j = 1$ when $c_j = 1$ and $\sum_{k \in M_j} h_k = 0$ (clinic $j$ has no hospital covering it).
+\end{remark}
+
+\subsection{Bottom-Up Referral Model (R2)}
+
+\begin{definition}[R2 Model]
+R2 maximizes both clinic coverage and hospital accessibility for referred patients:
+\[ \text{Maximize } Z = \left[ \sum_{i \in I} a_i y_i, \sum_{i \in I} \left( \sum_{j \in N_i} \alpha_i a_i x_{ij} \right) \right] \]
+\[
+    \text{subject to: }
+    \begin{cases}
+        \sum\limits_{j \in N_i} c_j + \sum\limits_{j \in V_i} h_j \geq y_i, & \forall i \in I \\
+        x_{ij} \leq c_j + h_j, & \forall i \in I, \forall j \in N_i \\
+        x_{ij} \leq h_j, & \forall i \in I, \forall j \in V_i \setminus N_i \\
+        x_{ij} \leq \sum\limits_{k \in M_j} h_k, & \forall i \in I, \forall j \in N_i \\
+        \sum\limits_{j \in N_i} x_{ij} \leq 1, & \forall i \in I \\
+        \sum\limits_j h_j = P_h, \quad \sum\limits_j c_j = P_c \\
+        c_j, h_j, x_{ij}, y_i \in \{0,1\}, & \forall i \in I, j \in J
+    \end{cases}
+\]
+where $\alpha_i$ is the referral rate from clinic to hospital for demand at node $i$.
+\end{definition}
+
+\begin{remark}
+$x_{ij} = 1$ indicates demand at $i$ is served by clinic $j$ and that clinic has hospital support for referrals.
+\end{remark}
+
+
+\section{Time Satisfaction Based Coverage Models}
+
+\begin{definition}[Time Satisfaction Function]
+Let $F(t_{ij})$ denote the time satisfaction function, where $t_{ij}$ is the travel time from demand node $i$ to facility $j$. This function represents customer satisfaction as a function of travel time, typically ranging from 0 to 1. The function is defined with two time thresholds:
+\begin{itemize}
+    \item $L_i$: Lower time threshold (maximum acceptable time for full satisfaction)
+    \item $U_i$: Upper time threshold (time beyond which satisfaction is zero)
+    \item For all $i \in I$, we assume $0 < L_i < U_i$
+\end{itemize}
+\end{definition}
+
+\subsection{Linear Time Satisfaction Function}
+
+\begin{definition}[Linear Function]
+The linear time satisfaction function is the simplest form, where satisfaction decreases linearly from 1 to 0 as travel time increases from $L_i$ to $U_i$:
+\[ 
+F(t_{ij}) = 
+\begin{cases} 
+1, & t_{ij} \leq L_i \\
+\frac{U_i - t_{ij}}{U_i - L_i}, & L_i < t_{ij} \leq U_i \\
+0, & t_{ij} > U_i
+\end{cases}
+\quad \forall i \in I, \forall j \in J
+\]
+\end{definition}
+
+\begin{remark}
+This function assumes that customer dissatisfaction increases at a constant rate as travel time increases beyond $L_i$.
+\end{remark}
+
+\subsection{Convex/Concave Time Satisfaction Function}
+
+\begin{definition}[Convex/Concave Function]
+The convex/concave time satisfaction function allows for different sensitivity patterns through a shape parameter $k_i$:
+\[ 
+F(t_{ij}) = 
+\begin{cases} 
+1 - \left[ \frac{t_{ij} - L_i}{U_i - L_i} \right]^{k_i}, & t_{ij} \leq L_i \\
+0, & L_i < t_{ij} \leq U_i \\
+0, & t_{ij} > U_i
+\end{cases}
+\quad \forall i \in I, \forall j \in J
+\]
+where $k_i > 0$ is the time sensitivity coefficient for demand node $i$.
+\end{definition}
+
+\begin{remark}
+The shape of the function depends on $k_i$:
+\begin{itemize}
+    \item When $k_i < 1$, the function is concave (sensitivity decreases with time)
+    \item When $k_i = 1$, the function becomes linear
+    \item When $k_i > 1$, the function is convex (sensitivity increases with time)
+\end{itemize}
+An alternative symmetric form passing through point $\left( \frac{L_i + U_i}{2}, \frac{1}{2} \right)$ can be defined.
+\end{remark}
+
+\subsection{Cosine Distributed Time Satisfaction Function}
+
+\begin{definition}[Cosine Function]
+The cosine distributed time satisfaction function uses a cosine curve segment from $\pi/2$ to $3\pi/2$:
+\[ 
+F(t_{ij}) = 
+\begin{cases} 
+1, & t_{ij} \leq L_i \\
+\frac{1}{2} + \frac{1}{2} \cos \left[ \frac{\pi}{U_i - L_i} \left( t_{ij} - \frac{U_i + L_i}{2} \right) + \frac{\pi}{2} \right], & L_i < t_{ij} \leq U_i \\
+0, & t_{ij} > U_i
+\end{cases}
+\quad \forall i \in I, \forall j \in J
+\]
+\end{definition}
+
+\begin{remark}
+This function has smaller satisfaction changes near the thresholds $L_i$ and $U_i$, and larger changes in the middle portion of the curve.
+\end{remark}
+
+\subsection{Descending Exponential Sigmoid Time Satisfaction Function}
+
+\begin{definition}[Exponential Sigmoid Function]
+The descending exponential sigmoid function models rapid initial satisfaction decrease followed by slower decline:
+\[ 
+F(t_{ij}) = 
+\begin{cases} 
+1, & t_{ij} \leq L_i \\
+\frac{2e^{-\beta_i (t_{ij} - L_i)}}{1 + e^{-\beta_i (t_{ij} - L_i)}}, & t_{ij} > L_i
+\end{cases}
+\quad \forall i \in I, \forall j \in J
+\]
+where $\beta_i \in \mathbb{R}^+$ is the time sensitivity coefficient for demand node $i$.
+\end{definition}
+
+\begin{remark}
+\begin{itemize}
+    \item Customer satisfaction drops rapidly just beyond $L_i$
+    \item As travel time further increases, satisfaction decline becomes less sensitive
+    \item Larger $\beta_i$ values indicate higher time sensitivity
+    \item The upper threshold $U_i$ is implicitly defined by $\beta_i$
+\end{itemize}
+\end{remark}
+
+\subsection{Descending Semi-Cauchy Distributed Time Satisfaction Function}
+
+\begin{definition}[Semi-Cauchy Function]
+The descending semi-Cauchy distributed time satisfaction function has similar characteristics to the exponential sigmoid:
+\[ 
+F(t_{ij}) = 
+\begin{cases} 
+1, & t_{ij} \leq L_i \\
+\frac{1}{1 + \beta_i (t_{ij} - L_i)^2}, & t_{ij} > L_i
+\end{cases}
+\quad \forall i \in I, \forall j \in J
+\]
+where $\beta_i \in \mathbb{R}^+$ is the time sensitivity coefficient for demand node $i$.
+\end{definition}
+
+\subsection{Discrete Time Satisfaction Function}
+
+\begin{definition}[Discrete Step Function]
+The discrete time satisfaction function uses a stepwise approach with multiple satisfaction levels:
+\[ 
+F(t_{ij}) = 
+\begin{cases} 
+1, & t_{ij} \leq L_i \\
+S_i^r, & t_i^{r-1} < t_{ij} \leq t_i^r, \quad r \in [2, R] \\
+0, & t_{ij} > U_i
+\end{cases}
+\quad \forall i \in I, \forall j \in J
+\]
+where:
+\begin{itemize}
+    \item $t_i^r$: Time thresholds with $L_i = t_i^1 < t_i^2 < \cdots < t_i^R = U_i$
+    \item $S_i^r$: Satisfaction levels with $1 = S_i^1 > S_i^2 > \cdots > S_i^R = 0$
+    \item $R$: Number of discrete levels
+\end{itemize}
+\end{definition}
+
+\begin{remark}
+Discrete functions are practical for implementation and align with human perception patterns where satisfaction changes in steps rather than continuously.
+\end{remark}
+
+\subsection{Selection and Application Considerations}
+
+\begin{enumerate}
+    \item \textbf{Model Flexibility}: Continuous functions offer smooth transitions but may be computationally more complex
+    \item \textbf{Customer Psychology}: Different functions capture different customer sensitivity patterns
+    \item \textbf{Data Availability}: Choice may depend on available empirical data on customer time preferences
+    \item \textbf{Computational Efficiency}: Discrete functions are often easier to implement in optimization models
+    \item \textbf{Realism}: The function should reflect actual customer behavior in the specific context
+\end{enumerate}
+
+\subsection{Time Satisfaction Based Maximum Covering Location Problem (TSBMCLP)}
+
+\begin{definition}[TSBMCLP]
+TSBMCLP maximizes total satisfaction-weighted coverage given $p$ facilities:
+\[ \text{Maximize } Z = \sum_{i \in I} \sum_{j \in J} a_i F(t_{ij}) y_{ij} \]
+\[
+    \text{subject to: }
+    \begin{cases}
+        y_{ij} \leq x_j, & \forall i \in I, \forall j \in J \\
+        \sum\limits_{j \in J} x_j \leq p \\
+        \sum\limits_{j \in J} y_{ij} = 1, & \forall i \in I \\
+        x_j \in \{0,1\}, & \forall j \in J \\
+        y_{ij} \in \{0,1\}, & \forall i \in I, \forall j \in J
+    \end{cases}
+\]
+where $y_{ij} = 1$ indicates demand node $i$ is assigned to facility $j$ (the most satisfactory one).
+\end{definition}
+
+\begin{remark}
+Unlike MCLP, TSBMCLP allows each demand node to be assigned to only one facility (the most satisfactory one), and uses satisfaction-weighted demand rather than simple coverage.
+\end{remark}
+
+\subsection{Time Satisfaction Based Location Set Covering Problem (TSBLSCP)}
+
+\begin{definition}[TSBLSCP]
+TSBLSCP minimizes total facility cost while ensuring that at least a proportion $\beta$ of total demand is covered with satisfaction level at least $\alpha_i$:
+\[ \text{Minimize } Z = \sum_{j \in J} w_j x_j \]
+\[
+    \text{subject to: }
+    \begin{cases}
+        \sum\limits_{i \in I} a_i y_i \geq \beta \sum\limits_{i \in I} a_i \\
+        y_i \leq \sum\limits_{j \in J} c_{ij} x_j, & \forall i \in I \\
+        x_j \in \{0,1\}, & \forall j \in J \\
+        y_i \in \{0,1\}, & \forall i \in I
+    \end{cases}
+\]
+where $c_{ij} = 1$ if $\alpha_i \leq F(t_{ij})$ (i.e., facility $j$ covers demand node $i$ at the required satisfaction level $\alpha_i$), and 0 otherwise.
+\end{definition}
+
+
+\subsection{Time Satisfaction Based R1 Model (TSB-R1)}
+
+\begin{definition}[TSB-R1 Model]
+TSB-R1 maximizes clinic coverage satisfaction and minimizes clinic dissatisfaction with hospital access:
+\[ \text{Maximize } Z = \left( \sum_{i \in I} \sum_{j \in J} a_i F(t_{ij}) y_{ij}, -\sum_{j \in J} \sum_{k \in J} G(t_{jk}) q_{jk} \right) \]
+\[
+    \text{subject to: }
+    \begin{cases}
+        c_j + h_j \geq y_{ij}, & \forall i \in I, \forall j \in J \\
+        h_k - c_j + q_{jk} \geq 0, & \forall j \in J, \forall k \in J \\
+        \sum\limits_j c_j = P_c, \quad \sum\limits_k h_k = P_h \\
+        \sum\limits_j y_{ij} = 1, \quad \sum\limits_k q_{jk} = 1, & \forall i \in I, \forall j \in J \\
+        c_j, h_k, y_{ij}, q_{jk} \in \{0,1\}, & \forall i \in I, \forall j,k \in J
+    \end{cases}
+\]
+\end{definition}
+
+\begin{remark}
+The constraint $h_k - c_j + q_{jk} \geq 0$ ensures that if a clinic is established at $j$ ($c_j=1$) and no hospital is established at $k$ ($h_k=0$), then $q_{jk}$ must be 1, indicating dissatisfaction with the assignment.
+\end{remark}
+
+\subsection{Time Satisfaction Based R2 Model (TSB-R2)}
+
+\begin{definition}[TSB-R2 Model]
+TSB-R2 maximizes clinic coverage satisfaction and hospital accessibility satisfaction for referred patients:
+\[ \text{Maximize } Z = \left( \sum_{i \in I} \sum_{j \in J_1} a_i F(t_{ij}) y_{ij}, \sum_{i \in I} \sum_{j \in J_1} \sum_{k \in J_2} \alpha_i a_i \left[ F(t_{ij}) y_{ij} + G(t_{jk}) y^*_{jk} \right] \right) \]
+\[
+    \text{subject to: }
+    \begin{cases}
+        c_j + h_j \geq y_{ij}, & \forall i \in I, \forall j \in J \\
+        y_{ij} \leq c_j + h_j, & \forall i \in I, \forall j \in J \\
+        y^*_{jk} \leq h_k, & \forall j \in J, \forall k \in J_2 \\
+        c_j + h_j \leq 1, & \forall j \in J \\
+        \sum\limits_{j \in J_1} c_j = P_c, \quad \sum\limits_{k \in J_2} h_k = P_h \\
+        \sum\limits_{j \in J} y_{ij} = 1, \quad \sum\limits_{k \in J_2} y^*_{jk} = 1, & \forall i \in I, \forall j \in J \\
+        c_j, h_k, y_{ij}, y^*_{jk} \in \{0,1\}, & \forall i \in I, \forall j \in J, \forall k \in J_2
+    \end{cases}
+\]
+where $J_1$ and $J_2$ are clinic and hospital candidate sites respectively, $\alpha_i$ is the referral rate from clinic to hospital for demand at node $i$, $y_{ij}=1$ if demand at $i$ is served by clinic $j$, and $y^*_{jk}=1$ if clinic $j$ refers patients to hospital $k$.
+\end{definition}
+
+\section{Integrated Models}
+
+\subsection{MALP-R1 Integration}
+
+\begin{definition}[MALP-R1 Integrated Model]
+This model combines probabilistic reliability from MALP with the hierarchical structure from R1, incorporating time satisfaction:
+\[ \text{Maximize } Z = \left( \sum_{i \in I} a_i z_{ib_i}, -\sum_{j \in J} q_j \right) \]
+\[
+    \text{subject to: }
+    \begin{cases}
+        \sum\limits_{k=1}^{b_i} z_{ik} \leq \sum\limits_{j \in N_i} X_j, & \forall i \in I \\
+        z_{ik} \leq z_{i(k-1)}, & \forall i \in I, k=2,\dots,b_i \\
+        X_j = c_j + h_j, & \forall j \in J \\
+        \sum\limits_{k \in M_j} h_k - c_j + q_j \geq 0, & \forall j \in J \\
+        \sum\limits_j X_j \leq P, \quad \sum\limits_j c_j = P_c, \quad \sum\limits_j h_j = P_h \\
+        X_j \in \mathbb{N}_0, & \forall j \in J \\
+        c_j, h_j, q_j, z_{ik} \in \{0,1\}, & \forall i \in I, j \in J, k=1,\dots,b_i
+    \end{cases}
+\]
+\end{definition}
+
+\begin{remark}
+This integration allows multiple servers per facility while maintaining hierarchical referral requirements and probabilistic reliability constraints. The binary variables $c_j$ and $h_j$ determine whether a facility is a clinic, hospital, or both, while $z_{ik}$ tracks coverage reliability.
+\end{remark}
+
+\section{Queueing Theory Models for Facility Location(NOT FINISHED YET)}
+
+\subsection{Descriptive Models Overview}
+
+\begin{definition}[Descriptive Models]
+Descriptive models evaluate the performance of existing or proposed facility layouts. Key characteristics include:
+\begin{itemize}
+    \item Primary use: \textbf{System performance evaluation}
+    \item Common methods: \textbf{Queueing models} and \textbf{simulation}
+    \item Models are typically \textbf{nonlinear} with high computational complexity
+    \item Provide detailed system performance metrics
+\end{itemize}
+\end{definition}
+
+\subsection{Hypercube Queueing Model}
+
+\begin{definition}[Hypercube Model State Representation]
+    We consider:
+\begin{itemize}
+    \item Each server state: busy (1) or idle (0)
+    \item System state vector: $\mathbf{b} = (b_1, b_2, ..., b_p)$ for $p$ servers
+    \item Total states: $2^p$ (vertices of a $p$-dimensional hypercube)
+    \item Assumptions:
+    \begin{itemize}
+        \item Call arrivals: Poisson distribution with mean $\lambda_i$
+        \item Service times: Exponential distribution with mean $1/\mu$
+        \item System type: $M/M/p$ queue
+        \item Each demand node has a priority dispatch list
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{theorem}[Steady-State Probability Calculation]
+The steady-state probability $P_k$ for state $k$ satisfies:
+\[
+P_k(\lambda_k + w_k\mu) = \sum_{j = k - (1\text{ server busy})} P_j\lambda_k + \sum_{j = k + (1\text{ server busy})} P_j\mu
+\]
+where $w_k$ is the number of busy servers in state $k$.
+
+The solution can be obtained iteratively:
+\[
+P_k^n(\lambda_k + w_k\mu) = \sum_{j = k - (1\text{ server busy})} P_j^{n-1}\lambda_k + \sum_{j = k + (1\text{ server busy})} P_j^{n-1}\mu
+\]
+with normalization condition: $\sum_k P_k = 1$.
+\end{theorem}
+
+\begin{remark}
+The hypercube model computes detailed performance metrics but has computational complexity $O(2^p)$, making it impractical for large systems.
+\end{remark}
+
+\subsection{Approximate Hypercube Model}
+
+\begin{definition}[Larson's Approximation]
+The approximation avoids solving $2^p$ equations by directly computing server utilizations $\rho_j$ through $p$ nonlinear equations. Key formulas:
+\begin{itemize}
+    \item Probability that exactly $k$ servers are busy:
+    \[
+    P_k = Q[p,\rho,k-1]\rho^{k-1}(1-\rho)
+    \]
+    \item Correction factor accounting for server interdependence:
+    \[
+    Q[p,\rho,k-1] = \frac{\sum_{l=k-1}^{p-1} \frac{(p-k-2)(p-l)}{(l-k+1)!} \frac{p^k \rho^{l-k+1}}{p!}}{(1-\rho)\left[\sum_{i=0}^{p-1} \frac{p^i \rho^i}{i!}\right] + \frac{p^p \rho^p}{p!}}
+    \]
+    \item Server dispatch rate:
+    \[
+    R_j^T = \sum_k \sum_{i \in G_j^k} \lambda_i P[\text{first } k-1 \text{ preferred servers busy, server } j \text{ idle}]
+    \]
+\end{itemize}
+\end{definition}
+
+\section{Model Classification Summary}
+
+\begin{table}[h]
+    \centering
+    \caption{Classification of Coverage Models by Objective Function}
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Objective} & \textbf{Models} \\
+        \hline
+        Minimize cost & LSCP, PLSCP, QPLSCP, TSBLSCP \\
+        \hline
+        Maximize covered population & MCLP, TSBMCLP, R1, R2 \\
+        \hline
+        Maximize probability/expectation & MEXCLP \\
+        \hline
+        Maximize accessibility & MALP I, MALP II, R2 (clinic-to-hospital) \\
+        \hline
+        Minimize uncovered clinics & R1 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \caption{Classification of Coverage Models by Constraints}
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Constraint Type} & \textbf{Models} \\
+        \hline
+        Fixed number of facilities $p$ & MCLP, TSBMCLP, MEXCLP, MALP, R1, R2 \\
+        \hline
+        Multiple servers per facility ($X_j \geq 1$) & MEXCLP, PLSCP, QPLSCP, MALP \\
+        \hline
+        Variable local busy rates $q_i$ & PLSCP, QPLSCP, MALP \\
+        \hline
+        Hierarchical facility location & R1, R2, TSB-R1, TSB-R2 \\
+        \hline
+        Time satisfaction functions & TSBMCLP, TSBLSCP, TSB-R1, TSB-R2 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\section{Conclusion}
+
+This document provides a comprehensive overview of facility location models, covering:
+\begin{itemize}
+    \item Basic coverage models (LSCP, MCLP)
+    \item Probabilistic extensions (MEXCLP, PLSCP, MALP)
+    \item Hierarchical models (R1, R2)
+    \item Time satisfaction based models (TSBMCLP, TSBLSCP, TSB-R1, TSB-R2)
+    \item Integrated models (MALP-R1)
+    \item Queueing theory based descriptive models
+\end{itemize}
+
+Future research directions include integrating time satisfaction functions with hierarchical probabilistic models, developing efficient solution algorithms for complex integrated models, and applying these models to real-world healthcare facility location problems.
+
+\end{document}
