@@ -4,4 +4,4 @@ Model arrangement of Facility Location Problems: Coverage Models and Hierarchica
 
 NOT finish yet,which is still being improved...
 
-Because it is the first version,there nay be many errors.
+Because it is the first version,there may be many errors.
